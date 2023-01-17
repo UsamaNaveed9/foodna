@@ -54,6 +54,6 @@ class CustomerPricingForm(Document):
 	def submit(self):
 		if len(self.items) > 2:
 			msgprint(_("The task has been enqueued as a background job. In case there is any issue on processing in background, the system will add a comment about the error on this Customer Pricing Form and revert to the Draft stage"))
-			self.queue_action('submit', timeout==5000)
+			self.queue_action('submit', timeout=5000)
 		else:
 			self._submit()			
