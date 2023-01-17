@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include foodna *.css
+recursive-include foodna *.csv
+recursive-include foodna *.html
+recursive-include foodna *.ico
+recursive-include foodna *.js
+recursive-include foodna *.json
+recursive-include foodna *.md
+recursive-include foodna *.png
+recursive-include foodna *.py
+recursive-include foodna *.svg
+recursive-include foodna *.txt
+recursive-exclude foodna *.pyc
