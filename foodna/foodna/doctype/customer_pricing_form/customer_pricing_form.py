@@ -7,13 +7,13 @@ from frappe.model.document import Document
 
 class CustomerPricingForm(Document):
 	def before_submit(self):
-		if self.customer_name:
+		if self.customer:
 			for i in self.items:
 				item = frappe.get_doc("Item",i.item_code)
 				check = ""
 				if item.customer_items:
 					for j in item.customer_items:
-						if self.customer_name == j.customer_name:
+						if self.customer == j.customer_name:
 							j.ref_code = i.customer_code
 							item.save()
 							check = j.customer_name
