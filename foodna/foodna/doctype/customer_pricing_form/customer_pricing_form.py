@@ -20,7 +20,8 @@ class CustomerPricingForm(Document):
 
 					if not check:
 						cust_it = frappe.new_doc("Item Customer Detail")
-						cust_it.customer_name = self.customer_name
+						cust_it.customer_name = self.customer
+						cust_it.customer_n = self.customer_name
 						cust_it.customer_group = frappe.get_value('Customer',self.customer_name,'customer_group')
 						cust_it.ref_code = i.customer_code
 						item.append("customer_items", cust_it)
@@ -28,7 +29,8 @@ class CustomerPricingForm(Document):
 
 				else:
 					cust_it = frappe.new_doc("Item Customer Detail")
-					cust_it.customer_name = self.customer_name
+					cust_it.customer_name = self.customer
+					cust_it.customer_n = self.customer_name
 					cust_it.customer_group = frappe.get_value('Customer',self.customer_name,'customer_group')
 					cust_it.ref_code = i.customer_code
 					item.append("customer_items", cust_it)
