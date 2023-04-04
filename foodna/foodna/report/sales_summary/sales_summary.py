@@ -68,6 +68,8 @@ def get_data(filters=None):
 		if entries:
 			total_sales = total_return = total_net_sales = 0.0
 			for entry in entries:
+				entry['sales_qty'] += entry['return_qty'] 
+				entry['net_sales'] = entry['sales_qty'] - entry['return_qty']
 				total_sales += entry['sales_qty']
 				total_return += entry['return_qty']
 				total_net_sales += entry['net_sales']
