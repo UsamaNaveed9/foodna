@@ -58,12 +58,12 @@ def get_data(filters=None):
 		entries = frappe.db.sql("""select sii.item_code as item_code, sii.item_name as item_name,
                                 (select if(sum(sii1.qty),sum(sii1.qty),0) from `tabSales Invoice` as si1 join `tabSales Invoice Item` as sii1 where sii1.parent = si1.name
                                         and si1.is_return = 0 and sii1.item_code = sii.item_code and sii1.docstatus = 1 and
-                                        '{0}' < si1.posting_date < '{1}' and si1.customer = '{2}') as sales_qty,
+                                        si1.posting_date >= '{0}' and si1.posting_date <= '{1}' and si1.customer = '{2}') as sales_qty,
                                 (select if(sum(sii1.qty),sum(sii1.qty),0) from `tabSales Invoice` as si1 join `tabSales Invoice Item` as sii1 where sii1.parent = si1.name
                                         and si1.is_return = 1 and sii1.item_code = sii.item_code and sii1.docstatus = 1 and
-                                        '{0}' < si1.posting_date < '{1}' and si1.customer = '{2}') / -1 as return_qty,
+                                        si1.posting_date >= '{0}' and si1.posting_date <= '{1}' and si1.customer = '{2}') / -1 as return_qty,
                                 sum(sii.qty) as net_sales from `tabSales Invoice` as si join `tabSales Invoice Item` as sii on si.name = sii.parent
-                        where si.docstatus = 1 and '{0}' < si.posting_date < '{1}' and si.customer = '{2}' {3}
+                        where si.docstatus = 1 and si.posting_date >= '{0}' and si.posting_date <= '{1}' and si.customer = '{2}' {3}
                         group by sii.item_code""".format(filters.from_date,filters.to_date,row,condition),as_dict=1)
 		if entries:
 			total_sales = total_return = total_net_sales = 0.0
