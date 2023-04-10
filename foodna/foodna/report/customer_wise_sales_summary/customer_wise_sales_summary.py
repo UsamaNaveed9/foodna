@@ -100,6 +100,7 @@ def get_data(filters=None):
 		if filters.customer_group:
 			condition += "and si.customer_group = '{0}'".format(filters.customer_group)
 		cust_inv = frappe.get_list("Sales Invoice", filters={"customer": row})
+		frappe.errprint(len(cust_inv))
 		if len(cust_inv) > 0:
 			entries = frappe.db.sql("""select si.customer as customer, si.customer_name as customer_name, si.customer_group as customer_group,
 								(select sum(si1.grand_total) from `tabSales Invoice` as si1 where si1.is_return = 0 and si1.docstatus = 1 and
@@ -139,7 +140,7 @@ def get_data(filters=None):
 						fields=['name'],
 						pluck='name'
 					)
-					frappe.errprint(sales_invoice_list)
+					#frappe.errprint(sales_invoice_list)
 					cogs = 0 
 					for s_inv in sales_invoice_list:
 						sales_invoice = frappe.get_doc("Sales Invoice",s_inv )
@@ -160,7 +161,7 @@ def get_data(filters=None):
 						fields=['name'],
 						pluck='name'
 					)
-					frappe.errprint(sales_invoice_list)
+					#frappe.errprint(sales_invoice_list)
 					r_cogs = 0 
 					for s_inv in sales_invoice_list:
 						sales_invoice = frappe.get_doc("Sales Invoice",s_inv )
