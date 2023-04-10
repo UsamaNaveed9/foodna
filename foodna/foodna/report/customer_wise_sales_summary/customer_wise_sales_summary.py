@@ -114,68 +114,68 @@ def get_data(filters=None):
 						where si.docstatus = 1 and si.posting_date >= '{0}' and si.posting_date <= '{1}' and si.customer = '{2}' {3}
 						group by si.customer""".format(filters.from_date,filters.to_date,row,condition),as_dict=1)
 
-		if entries:
-			gross_sales = sales_after_discount = 0.0
-			for entry in entries:
-				if entry['r_discount']:
-					entry['discount'] = entry['s_discount'] + entry['r_discount']
-				else:
-					entry['discount'] = entry['s_discount']
+			if entries:
+				gross_sales = sales_after_discount = 0.0
+				for entry in entries:
+					if entry['r_discount']:
+						entry['discount'] = entry['s_discount'] + entry['r_discount']
+					else:
+						entry['discount'] = entry['s_discount']
 
-				if entry['sales_return']:
-					entry['net_sales'] = entry['net_sales'] - entry['sales_return']	
-					entry['gross_sales'] = entry['net_sales'] + entry['sales_return'] + entry['discount']
-				else:
-					entry['gross_sales'] = entry['net_sales'] + entry['discount']
-				entry['sales_after_discount'] = entry['gross_sales'] - entry['discount']	
+					if entry['sales_return']:
+						entry['net_sales'] = entry['net_sales'] - entry['sales_return']	
+						entry['gross_sales'] = entry['net_sales'] + entry['sales_return'] + entry['discount']
+					else:
+						entry['gross_sales'] = entry['net_sales'] + entry['discount']
+					entry['sales_after_discount'] = entry['gross_sales'] - entry['discount']	
 
-				sales_invoice_list = frappe.db.get_list('Sales Invoice',
-					filters=[
-						['posting_date', 'between', [filters.from_date, filters.to_date]],
-						['docstatus', '=', '1'],
-						['customer', '=', entry['customer']],
-						['is_return', '=', 0]
-					],
-					fields=['name'],
-					pluck='name'
-				)
-				frappe.errprint(sales_invoice_list)
-				cogs = 0 
-				for s_inv in sales_invoice_list:
-					sales_invoice = frappe.get_doc("Sales Invoice",s_inv )
-					for item in sales_invoice.items:
-						valu_rate = frappe.db.get_value('Bin', {'item_code': item.item_code}, 'valuation_rate')
-		
-						item_cogs = valu_rate * item.qty
-						
-						cogs += item_cogs
+					sales_invoice_list = frappe.db.get_list('Sales Invoice',
+						filters=[
+							['posting_date', 'between', [filters.from_date, filters.to_date]],
+							['docstatus', '=', '1'],
+							['customer', '=', entry['customer']],
+							['is_return', '=', 0]
+						],
+						fields=['name'],
+						pluck='name'
+					)
+					frappe.errprint(sales_invoice_list)
+					cogs = 0 
+					for s_inv in sales_invoice_list:
+						sales_invoice = frappe.get_doc("Sales Invoice",s_inv )
+						for item in sales_invoice.items:
+							valu_rate = frappe.db.get_value('Bin', {'item_code': item.item_code}, 'valuation_rate')
 
-				sales_invoice_list = frappe.db.get_list('Sales Invoice',
-					filters=[
-						['posting_date', 'between', [filters.from_date, filters.to_date]],
-						['docstatus', '=', '1'],
-						['customer', '=', entry['customer']],
-						['is_return', '=', 1]
-					],
-					fields=['name'],
-					pluck='name'
-				)
-				frappe.errprint(sales_invoice_list)
-				r_cogs = 0 
-				for s_inv in sales_invoice_list:
-					sales_invoice = frappe.get_doc("Sales Invoice",s_inv )
-					for item in sales_invoice.items:
-						valu_rate = frappe.db.get_value('Bin', {'item_code': item.item_code}, 'valuation_rate')
-		
-						item_cogs = valu_rate * item.qty
-						
-						r_cogs += item_cogs		
+							item_cogs = valu_rate * item.qty
 
-				entry['cogs'] = cogs - (r_cogs/-1)
-				entry['gross_profit_amt'] = entry['net_sales'] - entry['cogs']
-				entry['gross_profit_pct'] = (entry['gross_profit_amt'] / entry['net_sales']) * 100
-			for entry in entries:
-				data.append(entry)
+							cogs += item_cogs
+
+					sales_invoice_list = frappe.db.get_list('Sales Invoice',
+						filters=[
+							['posting_date', 'between', [filters.from_date, filters.to_date]],
+							['docstatus', '=', '1'],
+							['customer', '=', entry['customer']],
+							['is_return', '=', 1]
+						],
+						fields=['name'],
+						pluck='name'
+					)
+					frappe.errprint(sales_invoice_list)
+					r_cogs = 0 
+					for s_inv in sales_invoice_list:
+						sales_invoice = frappe.get_doc("Sales Invoice",s_inv )
+						for item in sales_invoice.items:
+							valu_rate = frappe.db.get_value('Bin', {'item_code': item.item_code}, 'valuation_rate')
+
+							item_cogs = valu_rate * item.qty
+
+							r_cogs += item_cogs		
+
+					entry['cogs'] = cogs - (r_cogs/-1)
+					entry['gross_profit_amt'] = entry['net_sales'] - entry['cogs']
+					entry['gross_profit_pct'] = (entry['gross_profit_amt'] / entry['net_sales']) * 100
+				for entry in entries:
+					data.append(entry)
 
 	
 	return data	
