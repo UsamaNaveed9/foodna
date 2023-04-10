@@ -127,6 +127,7 @@ def get_data(filters=None):
 						entry['gross_sales'] = entry['net_sales'] + entry['sales_return'] + entry['discount']
 					elif entry['net_sales']:
 						entry['gross_sales'] = entry['net_sales'] + entry['discount']
+					if entry['net_sales'] and entry['sales_return']:
 						entry['sales_after_discount'] = entry['gross_sales'] - entry['discount']	
 
 					sales_invoice_list = frappe.db.get_list('Sales Invoice',
