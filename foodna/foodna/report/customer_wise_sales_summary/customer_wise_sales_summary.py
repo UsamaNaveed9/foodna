@@ -100,7 +100,6 @@ def get_data(filters=None):
 		if filters.customer_group:
 			condition += "and si.customer_group = '{0}'".format(filters.customer_group)
 		cust_inv = frappe.get_list("Sales Invoice", filters={"customer": row})
-		frappe.errprint(len(cust_inv))
 		if len(cust_inv) > 0:
 			entries = frappe.db.sql("""select si.customer as customer, si.customer_name as customer_name, si.customer_group as customer_group,
 								(select sum(si1.grand_total) from `tabSales Invoice` as si1 where si1.is_return = 0 and si1.docstatus = 1 and
@@ -123,12 +122,12 @@ def get_data(filters=None):
 					else:
 						entry['discount'] = entry['s_discount']
 
-					if entry['sales_return']:
+					if entry['sales_return'] and entry['net_sales']:
 						entry['net_sales'] = entry['net_sales'] - entry['sales_return']	
 						entry['gross_sales'] = entry['net_sales'] + entry['sales_return'] + entry['discount']
-					else:
+					elif entry['net_sales']:
 						entry['gross_sales'] = entry['net_sales'] + entry['discount']
-					entry['sales_after_discount'] = entry['gross_sales'] - entry['discount']	
+						entry['sales_after_discount'] = entry['gross_sales'] - entry['discount']	
 
 					sales_invoice_list = frappe.db.get_list('Sales Invoice',
 						filters=[
@@ -173,8 +172,9 @@ def get_data(filters=None):
 							r_cogs += item_cogs		
 
 					entry['cogs'] = cogs - (r_cogs/-1)
-					entry['gross_profit_amt'] = entry['net_sales'] - entry['cogs']
-					entry['gross_profit_pct'] = (entry['gross_profit_amt'] / entry['net_sales']) * 100
+					if entry['net_sales']:
+						entry['gross_profit_amt'] = entry['net_sales'] - entry['cogs']
+						entry['gross_profit_pct'] = (entry['gross_profit_amt'] / entry['net_sales']) * 100
 				for entry in entries:
 					data.append(entry)
 
