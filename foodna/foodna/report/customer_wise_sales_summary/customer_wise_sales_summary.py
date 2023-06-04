@@ -56,14 +56,26 @@ def get_columns(filters=None):
 			"width": 100,
 		},
 		{
+			"fieldname": "return_cogs",
+			"label": _("Return COGS"),
+			"fieldtype": "Float",
+			"width": 100,
+		},
+		{
 			"fieldname": "net_sales",
 			"label": _("Net Sales"),
 			"fieldtype": "Float",
 			"width": 90,
 		},
 		{
-			"fieldname": "cogs",
-			"label": _("COGS"),
+			"fieldname": "sales_cogs",
+			"label": _("Sales COGS"),
+			"fieldtype": "Float",
+			"width": 90,
+		},
+		{
+			"fieldname": "total_cogs",
+			"label": _("Total COGS"),
 			"fieldtype": "Float",
 			"width": 90,
 		},
@@ -141,7 +153,7 @@ def get_data(filters=None):
 						pluck='name'
 					)
 					#frappe.errprint(sales_invoice_list)
-					cogs = 0 
+					sales_cogs = 0 
 					for s_inv in sales_invoice_list:
 						sales_invoice = frappe.get_doc("Sales Invoice",s_inv )
 						for item in sales_invoice.items:
@@ -149,7 +161,7 @@ def get_data(filters=None):
 
 							item_cogs = valu_rate * item.qty
 
-							cogs += item_cogs
+							sales_cogs += item_cogs
 
 					sales_invoice_list = frappe.db.get_list('Sales Invoice',
 						filters=[
@@ -162,7 +174,7 @@ def get_data(filters=None):
 						pluck='name'
 					)
 					#frappe.errprint(sales_invoice_list)
-					r_cogs = 0 
+					return_cogs = 0 
 					for s_inv in sales_invoice_list:
 						sales_invoice = frappe.get_doc("Sales Invoice",s_inv )
 						for item in sales_invoice.items:
@@ -170,11 +182,13 @@ def get_data(filters=None):
 
 							item_cogs = valu_rate * item.qty
 
-							r_cogs += item_cogs		
+							return_cogs += item_cogs		
 
-					entry['cogs'] = cogs - (r_cogs/-1)
+					entry['sales_cogs'] = sales_cogs
+					entry['return_cogs'] = return_cogs/-1
+					entry['total_cogs'] = sales_cogs + (return_cogs/-1)
 					if entry['net_sales']:
-						entry['gross_profit_amt'] = entry['net_sales'] - entry['cogs']
+						entry['gross_profit_amt'] = entry['net_sales'] - entry['total_cogs']
 						entry['gross_profit_pct'] = (entry['gross_profit_amt'] / entry['net_sales']) * 100
 				for entry in entries:
 					data.append(entry)
