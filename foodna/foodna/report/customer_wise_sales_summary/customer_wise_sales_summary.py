@@ -189,7 +189,10 @@ def get_data(filters=None):
 					entry['total_cogs'] = sales_cogs + (return_cogs/-1)
 					if entry['net_sales']:
 						entry['gross_profit_amt'] = entry['net_sales'] - entry['total_cogs']
-						entry['gross_profit_pct'] = (entry['gross_profit_amt'] / entry['net_sales']) * 100
+						if entry['gross_profit_amt'] > 0:
+							entry['gross_profit_pct'] = (entry['gross_profit_amt'] / entry['net_sales']) * 100
+						else:
+							entry['gross_profit_pct'] = 0
 				for entry in entries:
 					data.append(entry)
 
