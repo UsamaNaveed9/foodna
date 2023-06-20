@@ -26,7 +26,7 @@ def get_columns(filters=None):
 		},
 		{
 			"fieldname": "sales_qty",
-			"label": _("Sales Quantity"),
+			"label": _("Net Sales"),
 			"fieldtype": "Float",
 			"width": 120,
 		},
@@ -38,7 +38,7 @@ def get_columns(filters=None):
 		},
 		{
 			"fieldname": "net_sales",
-			"label": _("Net Sales"),
+			"label": _("Actual Sales"),
 			"fieldtype": "Float",
 			"width": 120,
 		},
@@ -68,7 +68,6 @@ def get_data(filters=None):
 		if entries:
 			total_sales = total_return = total_net_sales = 0.0
 			for entry in entries:
-				entry['sales_qty'] += entry['return_qty'] 
 				entry['net_sales'] = entry['sales_qty'] - entry['return_qty']
 				total_sales += entry['sales_qty']
 				total_return += entry['return_qty']
