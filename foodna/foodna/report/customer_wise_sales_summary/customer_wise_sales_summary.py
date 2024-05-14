@@ -22,18 +22,24 @@ def get_columns(filters=None):
 			"fieldname": "customer_name",
 			"label": _("Customer Name"),
 			"fieldtype": "Data",
-			"width": 130,
+			"width": 150,
 		},
 		{
 			"fieldname": "customer_group",
 			"label": _("Customer Group"),
 			"fieldtype": "Link",
 			"options": "Customer Group",
-			"width": 130,
+			"width": 120,
 		},
 		{
 			"fieldname": "gross_sales",
 			"label": _("Gross Sales"),
+			"fieldtype": "Float",
+			"width": 100,
+		},
+		{
+			"fieldname": "sales_cogs",
+			"label": _("Sales COGS"),
 			"fieldtype": "Float",
 			"width": 100,
 		},
@@ -47,49 +53,49 @@ def get_columns(filters=None):
 			"fieldname": "sales_after_discount",
 			"label": _("Sales After Discount"),
 			"fieldtype": "Float",
-			"width": 140,
+			"width": 160,
 		},
 		{
 			"fieldname": "sales_return",
 			"label": _("Sales Return"),
 			"fieldtype": "Float",
-			"width": 100,
+			"width": 120,
 		},
 		{
 			"fieldname": "return_cogs",
 			"label": _("Return COGS"),
 			"fieldtype": "Float",
-			"width": 100,
+			"width": 120,
 		},
 		{
 			"fieldname": "net_sales",
 			"label": _("Net Sales"),
 			"fieldtype": "Float",
-			"width": 90,
+			"width": 100,
 		},
 		{
-			"fieldname": "sales_cogs",
-			"label": _("Sales COGS"),
+			"fieldname": "net_sales_cogs",
+			"label": _("Net Sales COGS"),
 			"fieldtype": "Float",
-			"width": 90,
+			"width": 130,
 		},
 		{
 			"fieldname": "total_cogs",
 			"label": _("Total COGS"),
 			"fieldtype": "Float",
-			"width": 90,
+			"width": 100,
 		},
 		{
 			"fieldname": "gross_profit_amt",
 			"label": _("Gross Profit Amount"),
 			"fieldtype": "Float",
-			"width": 110,
+			"width": 140,
 		},
 		{
 			"fieldname": "gross_profit_pct",
 			"label": _("Profit %"),
 			"fieldtype": "Float",
-			"width": 90,
+			"width": 100,
 		},
 	]
 
@@ -155,14 +161,10 @@ def get_data(filters=None):
 					#frappe.errprint(sales_invoice_list)
 					sales_cogs = 0 
 					for s_inv in sales_invoice_list:
-						sales_invoice = frappe.get_doc("Sales Invoice",s_inv )
-						for item in sales_invoice.items:
-							valu_rate = frappe.db.get_value('Bin', {'item_code': item.item_code}, 'valuation_rate')
-
-							item_cogs = valu_rate * item.qty
-
-							sales_cogs += item_cogs
-
+						s_cogs_value = frappe.db.get_value("GL Entry",{'account': 'Cost of Goods Sold - FN','voucher_no': s_inv},'debit')
+						if s_cogs_value is not None:
+							sales_cogs += s_cogs_value
+					
 					sales_invoice_list = frappe.db.get_list('Sales Invoice',
 						filters=[
 							['posting_date', 'between', [filters.from_date, filters.to_date]],
@@ -176,17 +178,14 @@ def get_data(filters=None):
 					#frappe.errprint(sales_invoice_list)
 					return_cogs = 0 
 					for s_inv in sales_invoice_list:
-						sales_invoice = frappe.get_doc("Sales Invoice",s_inv )
-						for item in sales_invoice.items:
-							valu_rate = frappe.db.get_value('Bin', {'item_code': item.item_code}, 'valuation_rate')
-
-							item_cogs = valu_rate * item.qty
-
-							return_cogs += item_cogs		
+						r_cogs_value = frappe.db.get_value("GL Entry",{'account': 'Cost of Goods Sold - FN','voucher_no': s_inv},'credit')
+						if r_cogs_value is not None:
+							return_cogs += r_cogs_value
 
 					entry['sales_cogs'] = sales_cogs
-					entry['return_cogs'] = return_cogs/-1
-					entry['total_cogs'] = sales_cogs + (return_cogs/-1)
+					entry['return_cogs'] = return_cogs
+					entry['net_sales_cogs'] = sales_cogs - return_cogs
+					entry['total_cogs'] = sales_cogs + return_cogs
 					if entry['net_sales']:
 						entry['gross_profit_amt'] = entry['net_sales'] - entry['total_cogs']
 						if entry['gross_profit_amt'] > 0:
